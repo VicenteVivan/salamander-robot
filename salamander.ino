@@ -21,23 +21,28 @@
 #define MOTOR_PIN_2  5
 #define MOTOR_PIN_3  6
 #define MOTOR_PIN_4  7
+#define NUM_SERVOS   4
+#define NUM_MOTORS   4
 #define PI 3.14159 
 
-// Global variables
+// ================== Global Variables =====================
+
 Servo servo1; //    m1-(S1)-m2    (Head)
 Servo servo2; //       |S2|
 Servo servo3; //       |S3|
 Servo servo4; //    m3-(S4)-m4    (Tail)
 
-float lag = .725; // Phase lag between segments
+// Wave parameters
 int frequency = 1; // Frequency of movement
-int amplitude = 20; // Amplitude of movement
+int amplitude = 20; // Amplitude of movement (degrees of rotation)
+int lag = 2 * PI / (NUM_SERVOS - 1); // Phase lag between segments
+
 
 // ================= Function prototypes ===================
 void setup();
 void loop(); 
 double toRadians(double degrees);
-void wave(Servo *sn, int amplitude, int frequency, int counter, int n, int lag);
+void wave(Servo *segment, int frequency, int counter, int n);
 
 
 // ================== Setup Salamander =====================
@@ -63,6 +68,7 @@ void setup() {
     pinMode(MOTOR_PIN_3, OUTPUT);
     pinMode(MOTOR_PIN_4, OUTPUT);
 }
+
 
 // =========================================================
 //                        Main Loop                         
@@ -94,10 +100,10 @@ void loop() {
 
     // Salamander's undulation (Ƨ)
     for (int counter = 180; counter < 360; i++) {
-        wave(&servo1, 10, 10, counter, 1, 3);
+        wave(&servo1, 10, 10, counter, 1, 0);
         wave(&servo2, 10, 10, counter, 1, 1);
-        wave(&servo3, 10, 10, counter, 1, -1);
-        wave(&servo4, 10, 10, counter, 1, -3);
+        wave(&servo3, 10, 10, counter, 1, 2);
+        wave(&servo4, 10, 10, counter, 1, 3);
         delay(10); 
     }
     delay(1000); // Wait for 1 second
@@ -126,10 +132,9 @@ double toRadians(double degrees) {
 
 // wave(): n is the number of the current segment (1, 2, 3, or 4) amplitude 
 // determines how wide the wave is (i.e. how much the "S" shape is curved),
-// frequency (along the variable delayTime) determine the speed of the salamander,
-// counter is the loop variable that takes the salamander through its undulation
-// and lag is the constant angular difference between segments.
-void wave(Servo *sn, int amplitude, int frequency, int counter, int n, int lag)
-{
-    sn->write(90+amplitude*cos(toRadians(frequency*counter) - n*lag));
+// frequency determines the speed of the salamander, counter is the loop
+// variable that takes the salamander through its undulation and lag is the
+// constant angular difference between segments.
+void wave(Servo *sn, int counter, int n) {
+    segment->write(90 + amplitude*cos(toRadians(frequency*counter) - n*lag));
 }
